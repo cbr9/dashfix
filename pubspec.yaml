@@ -16,7 +16,6 @@ dependencies:
   geolocator: ^9.0.2
   random_date: ^0.0.7
   provider: ^6.0.5
-  property_change_notifier: ^0.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
