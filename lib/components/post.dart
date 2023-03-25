@@ -1,7 +1,7 @@
-import 'package:dashfix_new/components/post_metadata.dart';
-import 'package:dashfix_new/components/social_row.dart';
-import 'package:dashfix_new/components/user_header.dart';
-import 'package:dashfix_new/pages/comments_page.dart';
+import 'package:dashfix/components/post_metadata.dart';
+import 'package:dashfix/components/social_row.dart';
+import 'package:dashfix/components/user_header.dart';
+import 'package:dashfix/pages/comments_page.dart';
 import 'package:expandable_text/expandable_text.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';

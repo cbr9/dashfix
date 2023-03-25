@@ -1,6 +1,6 @@
-import 'package:dashfix_new/components/appbar.dart';
-import 'package:dashfix_new/components/post.dart';
-import 'package:dashfix_new/post_bank.dart';
+import 'package:dashfix/components/appbar.dart';
+import 'package:dashfix/components/post.dart';
+import 'package:dashfix/post_bank.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';

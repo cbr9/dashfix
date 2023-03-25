@@ -1,7 +1,7 @@
-import 'package:dashfix_new/components/appbar.dart';
-import 'package:dashfix_new/components/bottom_navigation_bar.dart';
-import 'package:dashfix_new/pages/filter_sort_menu.dart';
-import 'package:dashfix_new/post_bank.dart';
+import 'package:dashfix/components/appbar.dart';
+import 'package:dashfix/components/bottom_navigation_bar.dart';
+import 'package:dashfix/pages/filter_sort_menu.dart';
+import 'package:dashfix/post_bank.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';

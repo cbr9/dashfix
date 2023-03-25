@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:dashfix_new/components/comment.dart';
-import 'package:dashfix_new/components/post.dart';
-import 'package:dashfix_new/utils.dart';
+import 'package:dashfix/components/comment.dart';
+import 'package:dashfix/components/post.dart';
+import 'package:dashfix/utils.dart';
 import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';

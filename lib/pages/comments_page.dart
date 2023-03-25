@@ -1,5 +1,5 @@
-import 'package:dashfix_new/components/appbar.dart';
-import 'package:dashfix_new/components/post.dart';
+import 'package:dashfix/components/appbar.dart';
+import 'package:dashfix/components/post.dart';
 import 'package:flutter/material.dart';
 
 class CommentsPage extends StatelessWidget {

@@ -1,4 +1,4 @@
-import 'package:dashfix_new/components/user_header.dart';
+import 'package:dashfix/components/user_header.dart';
 import 'package:flutter/material.dart';
 
 class Comment extends StatelessWidget {

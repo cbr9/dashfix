@@ -1,4 +1,4 @@
-# dashfix_new
+# dashfix
 
 A new Flutter project.
 
