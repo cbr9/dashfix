@@ -43,11 +43,12 @@ class SocialRow extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onComment;
   final VoidCallback onMessage;
-  const SocialRow(
-      {super.key,
-      required this.onShare,
-      required this.onComment,
-      required this.onMessage});
+  const SocialRow({
+    super.key,
+    required this.onShare,
+    required this.onComment,
+    required this.onMessage,
+  });
 
   @override
   Widget build(BuildContext context) {

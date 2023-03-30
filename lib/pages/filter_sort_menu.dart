@@ -78,7 +78,6 @@ class SortFilterMenu extends StatelessWidget {
                           value: postBank.maxDistance,
                           onChanged: (value) {
                             postBank.maxDistance = value;
-                            print('max distance ${postBank.maxDistance}');
                           },
                         ),
                       ),

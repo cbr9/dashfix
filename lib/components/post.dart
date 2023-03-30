@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashfix/components/comment.dart';
 import 'package:dashfix/components/post_metadata.dart';
 import 'package:dashfix/components/social_row.dart';
@@ -23,20 +24,22 @@ enum Status { toDo, workInProgress, done }
 
 // ignore: must_be_immutable
 class Post extends StatelessWidget {
-  late String username;
-  late String description;
-  late DateTime datePosted;
-  late String status;
-  late List<Comment> comments;
-  late DateTime requiredBy;
-  late String title;
-  late int visualizations;
-  late int amount;
-  late String type;
-  late double? distance;
+  final String id;
+  final String username;
+  final String description;
+  final DateTime datePosted;
+  final String status;
+  List<Comment> comments = [];
+  final DateTime requiredBy;
+  final String title;
+  final int visualizations;
+  final int amount;
+  final String type;
+  final double? distance;
 
   Post({
     super.key,
+    required this.id,
     required this.type,
     required this.username,
     required this.status,
@@ -48,9 +51,27 @@ class Post extends StatelessWidget {
     required this.visualizations,
     required this.comments,
     required this.distance,
-
-    // required this.visualizations,
   });
+
+  Future<List<Comment>> fetchComments() async {
+    final FirebaseFirestore db = FirebaseFirestore.instance;
+    final commentsSnapshot = await db.collection('comments').get();
+    final filteredDocs =
+        commentsSnapshot.docs.where((element) => element.get('Task').id == id);
+
+    return Future.wait(
+      filteredDocs.map((element) async {
+        final DocumentReference associatedUser = element.get('User');
+        return Comment(
+          datePosted: element.get('PostedOn').toDate(),
+          message: element.get('Message'),
+          username:
+              await associatedUser.get().then((value) => value.get('name')),
+          parent: null,
+        );
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {

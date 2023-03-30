@@ -88,10 +88,10 @@ class PostsPage extends StatelessWidget {
                                   postBank.sortDescending =
                                       !postBank.sortDescending;
                                   switch (postBank.sortBy) {
-                                    case SortBy.Offer:
+                                    case SortBy.offer:
                                       postBank.sortByOffer();
                                       break;
-                                    case SortBy.Distance:
+                                    case SortBy.distance:
                                       postBank.sortByDistance();
                                       break;
                                     default:
@@ -111,7 +111,10 @@ class PostsPage extends StatelessWidget {
                       Card(
                         child: Padding(
                           padding: const EdgeInsets.only(
-                              right: 4, top: 4, bottom: 4),
+                            right: 4,
+                            top: 4,
+                            bottom: 4,
+                          ),
                           child: TextButton.icon(
                             icon: const Icon(Icons.filter_list),
                             onPressed: () {

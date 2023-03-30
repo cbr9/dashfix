@@ -5,11 +5,13 @@ class Comment extends StatelessWidget {
   final String username;
   final DateTime datePosted;
   final String message;
+  final Comment? parent;
   const Comment({
     super.key,
     required this.username,
     required this.message,
     required this.datePosted,
+    this.parent,
   });
 
   @override
@@ -19,10 +21,10 @@ class Comment extends StatelessWidget {
       children: [
         UserHeader(username: username, datePosted: datePosted),
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(left: 16.0, bottom: 20),
           child: Row(
             children: [
-              Expanded(child: Text(message)),
+              Text(message),
             ],
           ),
         )

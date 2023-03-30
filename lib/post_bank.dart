@@ -4,7 +4,7 @@ import 'package:dashfix/main.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
-enum SortBy { DatePosted, Offer, Distance }
+enum SortBy { datePosted, offer, distance }
 
 class Sort {
   SortBy by;
@@ -17,7 +17,7 @@ class PostBank extends ChangeNotifier {
   late List<Post> _allPosts = [];
   late List<Post> _shownPosts = [];
   var _sortDescending = true;
-  var _sortBy = SortBy.Offer;
+  var _sortBy = SortBy.offer;
 
   double _maxOffer = 500;
   double _minOffer = 0;
@@ -27,15 +27,15 @@ class PostBank extends ChangeNotifier {
     _allPosts = [];
     _shownPosts = [];
 
-    final snapshot = await _db.collection('Tasks').get();
+    final tasksSnapshot = await _db.collection('Tasks').get();
     final position = await getUserLocation();
-    final posts = snapshot.docs.map((doc) async {
+    final posts = tasksSnapshot.docs.map((task) async {
       double? latitude;
       double? longitude;
       double? distance;
-      if (doc.data().containsKey('Location')) {
-        latitude = doc.get('Location').latitude;
-        longitude = doc.get('Location').longitude;
+      if (task.data().containsKey('Location')) {
+        latitude = task.get('Location').latitude;
+        longitude = task.get('Location').longitude;
         distance = Geolocator.distanceBetween(
               latitude!,
               longitude!,
@@ -44,18 +44,19 @@ class PostBank extends ChangeNotifier {
             ) /
             1000;
       }
-      DocumentReference user = doc.get('UserID');
+      DocumentReference user = task.get('UserID');
 
       return Post(
-        amount: doc.get('Amount'),
+        amount: task.get('Amount'),
+        id: task.id,
         comments: const [],
-        datePosted: doc.get('PostedOn').toDate(),
+        datePosted: task.get('PostedOn').toDate(),
         username: await user.get().then((value) => value.get('name')),
-        description: doc.get('Description'),
-        requiredBy: doc.get('RequiredBy').toDate(),
-        status: doc.get('Status'),
-        title: doc.get('Title'),
-        type: doc.get('Type'),
+        description: task.get('Description'),
+        requiredBy: task.get('RequiredBy').toDate(),
+        status: task.get('Status'),
+        title: task.get('Title'),
+        type: task.get('Type'),
         visualizations: 0,
         distance: distance,
       );
@@ -133,8 +134,7 @@ class PostBank extends ChangeNotifier {
       copy.sort((a, b) => b.amount.compareTo(a.amount));
     }
     posts = copy;
-    print(_shownPosts);
-    sortBy = SortBy.Offer;
+    sortBy = SortBy.offer;
   }
 
   sortByDistance() {
@@ -157,7 +157,7 @@ class PostBank extends ChangeNotifier {
       });
     }
     posts = copy;
-    sortBy = SortBy.Distance;
+    sortBy = SortBy.distance;
   }
 
   sortByDatePosted(bool descending) {
@@ -168,8 +168,7 @@ class PostBank extends ChangeNotifier {
       copy.sort((a, b) => b.datePosted.compareTo(a.datePosted));
     }
     posts = copy;
-    print(_shownPosts);
-    sortBy = SortBy.DatePosted;
+    sortBy = SortBy.datePosted;
   }
 
   List<Post> filterByOffer() {
