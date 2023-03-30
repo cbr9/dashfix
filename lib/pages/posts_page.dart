@@ -14,7 +14,7 @@ class PostsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var postBank = Provider.of<PostBank>(context);
     if (postBank.isEmpty) {
-      postBank.fetch();
+      postBank.refresh();
     }
     return Scaffold(
       appBar: buildAppBar(context),
@@ -29,113 +29,116 @@ class PostsPage extends StatelessWidget {
         onPressed: () {},
         child: const Icon(Icons.add),
       ),
-      body: Stack(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0, right: 8),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Flexible(
-                      child: Card(
-                        child: IconButton(
-                          onPressed: () {},
-                          icon: const Icon(Icons.search),
+      body: RefreshIndicator(
+        onRefresh: () => postBank.refresh(),
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0, right: 8),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Flexible(
+                        child: Card(
+                          child: IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.search),
+                          ),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 8,
-                      ),
-                      child: Card(
-                        child: Row(
-                          children: [
-                            PopupMenuButton(
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'Distance',
-                                  child: Text('Distance'),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'Offer',
-                                  child: Text('Offer'),
-                                ),
-                              ],
-                              onSelected: (value) async {
-                                if (value == 'Distance') {
-                                  postBank.sortByDistance();
-                                } else if (value == 'Offer') {
-                                  postBank.sortByOffer();
-                                }
-                              },
-                              initialValue: 'Offer',
-                              child: TextButton.icon(
-                                icon: const Icon(Icons.sort),
-                                label: Text(postBank.sortBy.name),
-                                onPressed: null,
-                              ),
-                            ),
-                            IconButton(
-                              onPressed: () {
-                                postBank.sortDescending =
-                                    !postBank.sortDescending;
-                                switch (postBank.sortBy) {
-                                  case SortBy.Offer:
-                                    postBank.sortByOffer();
-                                    break;
-                                  case SortBy.Distance:
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 8,
+                        ),
+                        child: Card(
+                          child: Row(
+                            children: [
+                              PopupMenuButton(
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'Distance',
+                                    child: Text('Distance'),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'Offer',
+                                    child: Text('Offer'),
+                                  ),
+                                ],
+                                onSelected: (value) async {
+                                  if (value == 'Distance') {
                                     postBank.sortByDistance();
-                                    break;
-                                  default:
-                                    break;
-                                }
-                              },
-                              icon: Icon(
-                                postBank.sortDescending
-                                    ? Icons.arrow_upward
-                                    : Icons.arrow_downward,
+                                  } else if (value == 'Offer') {
+                                    postBank.sortByOffer();
+                                  }
+                                },
+                                initialValue: 'Offer',
+                                child: TextButton.icon(
+                                  icon: const Icon(Icons.sort),
+                                  label: Text(postBank.sortBy.name),
+                                  onPressed: null,
+                                ),
                               ),
-                            ),
-                          ],
+                              IconButton(
+                                onPressed: () {
+                                  postBank.sortDescending =
+                                      !postBank.sortDescending;
+                                  switch (postBank.sortBy) {
+                                    case SortBy.Offer:
+                                      postBank.sortByOffer();
+                                      break;
+                                    case SortBy.Distance:
+                                      postBank.sortByDistance();
+                                      break;
+                                    default:
+                                      break;
+                                  }
+                                },
+                                icon: Icon(
+                                  postBank.sortDescending
+                                      ? Icons.arrow_upward
+                                      : Icons.arrow_downward,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    Card(
-                      child: Padding(
-                        padding:
-                            const EdgeInsets.only(right: 4, top: 4, bottom: 4),
-                        child: TextButton.icon(
-                          icon: const Icon(Icons.filter_list),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SortFilterMenu(),
-                              ),
-                            );
-                          },
-                          label: const Text('Filter'),
+                      Card(
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                              right: 4, top: 4, bottom: 4),
+                          child: TextButton.icon(
+                            icon: const Icon(Icons.filter_list),
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SortFilterMenu(),
+                                ),
+                              );
+                            },
+                            label: const Text('Filter'),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: ListView.builder(
-                  itemCount: postBank.posts.length,
-                  itemBuilder: (context, index) => postBank.posts[index],
-                ),
-              )
-            ],
-          ),
-        ],
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: postBank.posts.length,
+                    itemBuilder: (context, index) => postBank.posts[index],
+                  ),
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

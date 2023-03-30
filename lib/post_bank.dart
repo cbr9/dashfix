@@ -23,7 +23,10 @@ class PostBank extends ChangeNotifier {
   double _minOffer = 0;
   double _maxDistance = 5000;
 
-  void fetch() async {
+  Future<void> refresh() async {
+    _allPosts = [];
+    _shownPosts = [];
+
     final snapshot = await _db.collection('Tasks').get();
     final position = await getUserLocation();
     final posts = snapshot.docs.map((doc) async {
