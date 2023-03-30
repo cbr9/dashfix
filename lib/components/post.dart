@@ -89,10 +89,12 @@ class Post extends StatelessWidget {
                     value: '$amount€',
                   ),
                   PostMetadataCard(label: type),
-                  PostMetadataCard(
-                    label: 'Distance',
-                    value: '${distance}km',
-                  )
+                  distance != null
+                      ? PostMetadataCard(
+                          label: 'Distance',
+                          value: '${distance!.toStringAsFixed(2)}km',
+                        )
+                      : Container()
                 ],
               ),
             ),
