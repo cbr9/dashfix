@@ -1,12 +1,11 @@
+import 'package:dashfix/components/comment.dart';
 import 'package:dashfix/components/post_metadata.dart';
 import 'package:dashfix/components/social_row.dart';
 import 'package:dashfix/components/user_header.dart';
 import 'package:dashfix/pages/comments_page.dart';
 import 'package:expandable_text/expandable_text.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-
-import 'comment.dart';
+import 'package:share_plus/share_plus.dart';
 
 enum PostType {
   inPerson,
@@ -20,45 +19,38 @@ const typeString = {
   PostType.hybrid: 'Hybrid',
 };
 
-class Post extends StatelessWidget {
-  final String username;
-  final String message;
-  final DateTime datePosted;
-  final List<Comment> comments;
-  final int likes;
-  final int offer;
-  final double? longitude;
-  final double? latitude;
-  final PostType type;
+enum Status { toDo, workInProgress, done }
 
-  const Post({
+// ignore: must_be_immutable
+class Post extends StatelessWidget {
+  late String username;
+  late String description;
+  late DateTime datePosted;
+  late String status;
+  late List<Comment> comments;
+  late DateTime requiredBy;
+  late String title;
+  late int visualizations;
+  late int amount;
+  late String type;
+  late double? distance;
+
+  Post({
     super.key,
     required this.type,
     required this.username,
-    required this.message,
+    required this.status,
+    required this.description,
     required this.datePosted,
+    required this.requiredBy,
+    required this.title,
+    required this.amount,
+    required this.visualizations,
     required this.comments,
-    required this.likes,
-    required this.offer,
-    this.longitude,
-    this.latitude,
+    required this.distance,
+
+    // required this.visualizations,
   });
-
-  Future<double> getDistance() async {
-    var userLocation = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.best,
-    );
-    final rounded = (Geolocator.distanceBetween(
-              latitude!,
-              longitude!,
-              userLocation.latitude,
-              userLocation.altitude,
-            ) /
-            1000)
-        .toStringAsFixed(2);
-
-    return double.parse(rounded);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,12 +72,12 @@ class Post extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: isInPostsPage
                   ? ExpandableText(
-                      message,
+                      description,
                       expandText: 'show more',
                       maxLines: 4,
                       collapseText: 'show less',
                     )
-                  : Text(message),
+                  : Text(description),
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -94,18 +86,13 @@ class Post extends StatelessWidget {
                 children: [
                   PostMetadataCard(
                     label: 'Offers',
-                    value: '$offer€',
+                    value: '$amount€',
                   ),
-                  PostMetadataCard(label: typeString[type]!),
-                  (longitude != null && latitude != null)
-                      ? FutureBuilder(
-                          future: getDistance(),
-                          builder: (context, snapshot) => PostMetadataCard(
-                            label: 'Distance',
-                            value: '${snapshot.data}km',
-                          ),
-                        )
-                      : Container(),
+                  PostMetadataCard(label: type),
+                  PostMetadataCard(
+                    label: 'Distance',
+                    value: '${distance}km',
+                  )
                 ],
               ),
             ),
@@ -122,7 +109,9 @@ class Post extends StatelessWidget {
                     );
                   }
                 },
-                onShare: () {},
+                onShare: () {
+                  Share.share('Look what I found!');
+                },
                 onMessage: () {},
               ),
             )

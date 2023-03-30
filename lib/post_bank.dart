@@ -1,12 +1,8 @@
-import 'dart:math';
-
-import 'package:dashfix/components/comment.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashfix/components/post.dart';
-import 'package:dashfix/utils.dart';
-import 'package:faker/faker.dart';
+import 'package:dashfix/main.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:lipsum/lipsum.dart' as lipsum;
 
 enum SortBy { DatePosted, Offer, Distance }
 
@@ -17,8 +13,9 @@ class Sort {
 }
 
 class PostBank extends ChangeNotifier {
-  List<Post> _allPosts = [];
-  late List<Post> _shownPosts;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  late List<Post> _allPosts = [];
+  late List<Post> _shownPosts = [];
   var _sortDescending = true;
   var _sortBy = SortBy.Offer;
 
@@ -26,36 +23,50 @@ class PostBank extends ChangeNotifier {
   double _minOffer = 0;
   double _maxDistance = 5000;
 
-  PostBank.random() {
-    _allPosts = List.generate(
-      Random().nextInt(20),
-      (index) {
-        return Post(
-          type: PostType.inPerson,
-          datePosted: getRandomDateTime(),
-          username: faker.internet.userName(),
-          message: lipsum.createParagraph(),
-          likes: Random().nextInt(10),
-          comments: List.generate(
-            Random().nextInt(15) + 5,
-            (index) => Comment(
-              message: lipsum.createSentence(),
-              username: faker.internet.userName(),
-              datePosted: getRandomDateTime(),
-            ),
-          ),
-          offer: Random().nextInt(500),
-          longitude: Random().nextInt(30).toDouble(),
-          latitude: Random().nextInt(30).toDouble(),
-        );
-      },
-    );
-    _shownPosts = _allPosts;
+  void fetch() async {
+    final snapshot = await _db.collection('Tasks').get();
+    final position = await getUserLocation();
+    final posts = snapshot.docs.map((doc) async {
+      double? latitude;
+      double? longitude;
+      double? distance;
+      if (doc.data().containsKey('Location')) {
+        latitude = doc.get('Location').latitude;
+        longitude = doc.get('Location').longitude;
+        distance = Geolocator.distanceBetween(
+              latitude!,
+              longitude!,
+              position.latitude,
+              position.longitude,
+            ) /
+            1000;
+      }
+      DocumentReference user = doc.get('UserID');
+
+      return Post(
+        amount: doc.get('Amount'),
+        comments: const [],
+        datePosted: doc.get('PostedOn').toDate(),
+        username: await user.get().then((value) => value.get('name')),
+        description: doc.get('Description'),
+        requiredBy: doc.get('RequiredBy').toDate(),
+        status: doc.get('Status'),
+        title: doc.get('Title'),
+        type: doc.get('Type'),
+        visualizations: 0,
+        distance: distance,
+      );
+    }).toList();
+    _allPosts = await Future.wait(posts);
+    _shownPosts = [..._allPosts];
+    notifyListeners();
   }
 
-  PostBank(List<Post> posts) {
-    _allPosts = posts;
+  bool get isEmpty {
+    return _allPosts.isEmpty;
   }
+
+  PostBank();
 
   double get minOffer {
     return _minOffer;
@@ -111,98 +122,68 @@ class PostBank extends ChangeNotifier {
     notifyListeners();
   }
 
-  List<Post> sortByOffer(bool descending) {
-    var copy = [..._allPosts];
-    if (descending) {
-      copy.sort((a, b) => a.offer.compareTo(b.offer));
+  sortByOffer() {
+    var copy = [..._shownPosts];
+    if (_sortDescending) {
+      copy.sort((a, b) => a.amount.compareTo(b.amount));
     } else {
-      copy.sort((a, b) => b.offer.compareTo(a.offer));
+      copy.sort((a, b) => b.amount.compareTo(a.amount));
     }
-    return copy;
+    posts = copy;
+    print(_shownPosts);
+    sortBy = SortBy.Offer;
   }
 
-  List<Post> sortByDistance(
-    bool descending,
-    double userLatitude,
-    double userLongitude,
-  ) {
-    var copy = [..._allPosts];
-    if (descending) {
+  sortByDistance() {
+    var copy = [..._shownPosts];
+    if (_sortDescending) {
       copy.sort((a, b) {
-        return Geolocator.distanceBetween(
-                  a.latitude!,
-                  a.longitude!,
-                  userLatitude,
-                  userLongitude,
-                ) <
-                Geolocator.distanceBetween(
-                  b.latitude!,
-                  b.longitude!,
-                  userLatitude,
-                  userLongitude,
-                )
-            ? 1
-            : 0;
+        if (a.distance != null && b.distance != null) {
+          return a.distance!.compareTo(b.distance!);
+        } else {
+          return 1;
+        }
       });
     } else {
       copy.sort((a, b) {
-        return Geolocator.distanceBetween(
-                  b.latitude!,
-                  b.longitude!,
-                  userLatitude,
-                  userLongitude,
-                ) <
-                Geolocator.distanceBetween(
-                  a.latitude!,
-                  a.longitude!,
-                  userLatitude,
-                  userLongitude,
-                )
-            ? 1
-            : 0;
+        if (a.distance != null && b.distance != null) {
+          return b.distance!.compareTo(a.distance!);
+        } else {
+          return 1;
+        }
       });
     }
-    return copy;
+    posts = copy;
+    sortBy = SortBy.Distance;
   }
 
-  List<Post> sortByDatePosted(bool descending) {
-    var copy = [..._allPosts];
+  sortByDatePosted(bool descending) {
+    var copy = [..._shownPosts];
     if (descending) {
       copy.sort((a, b) => a.datePosted.compareTo(b.datePosted));
     } else {
       copy.sort((a, b) => b.datePosted.compareTo(a.datePosted));
     }
-    return copy;
+    posts = copy;
+    print(_shownPosts);
+    sortBy = SortBy.DatePosted;
   }
 
-  List<Post> filterByOffer(double? min, double? max) {
-    var copy = [..._allPosts];
-
-    if (min != null) {
-      copy.retainWhere((element) => element.offer >= min);
-    }
-    if (max != null) {
-      copy.retainWhere((element) => element.offer <= max);
-    }
-    return copy;
+  List<Post> filterByOffer() {
+    return _allPosts
+        .where(
+          (element) =>
+              element.amount >= _minOffer && element.amount <= _maxOffer,
+        )
+        .toList();
   }
 
-  List<Post> filterByDistance(
-    double max,
-    double userLatitude,
-    double userLongitude,
-  ) {
-    var copy = [..._allPosts];
-    copy.retainWhere((element) {
-      return Geolocator.distanceBetween(
-                element.latitude!,
-                element.longitude!,
-                userLatitude,
-                userLongitude,
-              ) /
-              1000 <=
-          max;
-    });
-    return copy;
+  List<Post> filterByDistance() {
+    return _allPosts
+        .where(
+          (element) =>
+              element.distance != null && element.distance! <= _maxDistance,
+        )
+        .toList();
   }
 }

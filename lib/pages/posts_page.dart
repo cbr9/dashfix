@@ -3,7 +3,6 @@ import 'package:dashfix/components/bottom_navigation_bar.dart';
 import 'package:dashfix/pages/filter_sort_menu.dart';
 import 'package:dashfix/post_bank.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class PostsPage extends StatelessWidget {
@@ -13,8 +12,10 @@ class PostsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var postBank = context.watch<PostBank>();
-
+    var postBank = Provider.of<PostBank>(context);
+    if (postBank.isEmpty) {
+      postBank.fetch();
+    }
     return Scaffold(
       appBar: buildAppBar(context),
       bottomNavigationBar: buildBottomNavigationBar(),
@@ -68,20 +69,9 @@ class PostsPage extends StatelessWidget {
                               ],
                               onSelected: (value) async {
                                 if (value == 'Distance') {
-                                  final location =
-                                      await Geolocator.getCurrentPosition(
-                                    desiredAccuracy: LocationAccuracy.best,
-                                  );
-                                  postBank.sortBy = SortBy.Distance;
-                                  postBank.posts = postBank.sortByDistance(
-                                    postBank.sortDescending,
-                                    location.altitude,
-                                    location.longitude,
-                                  );
+                                  postBank.sortByDistance();
                                 } else if (value == 'Offer') {
-                                  postBank.sortBy = SortBy.Offer;
-                                  postBank.posts = postBank
-                                      .sortByOffer(postBank.sortDescending);
+                                  postBank.sortByOffer();
                                 }
                               },
                               initialValue: 'Offer',
@@ -92,24 +82,15 @@ class PostsPage extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              onPressed: () async {
+                              onPressed: () {
                                 postBank.sortDescending =
                                     !postBank.sortDescending;
                                 switch (postBank.sortBy) {
                                   case SortBy.Offer:
-                                    postBank.posts = postBank
-                                        .sortByOffer(postBank.sortDescending);
+                                    postBank.sortByOffer();
                                     break;
                                   case SortBy.Distance:
-                                    final location =
-                                        await Geolocator.getCurrentPosition(
-                                      desiredAccuracy: LocationAccuracy.best,
-                                    );
-                                    postBank.posts = postBank.sortByDistance(
-                                      postBank.sortDescending,
-                                      location.latitude,
-                                      location.longitude,
-                                    );
+                                    postBank.sortByDistance();
                                     break;
                                   default:
                                     break;
@@ -117,8 +98,8 @@ class PostsPage extends StatelessWidget {
                               },
                               icon: Icon(
                                 postBank.sortDescending
-                                    ? Icons.arrow_downward
-                                    : Icons.arrow_upward,
+                                    ? Icons.arrow_upward
+                                    : Icons.arrow_downward,
                               ),
                             ),
                           ],

@@ -2,7 +2,6 @@ import 'package:dashfix/components/appbar.dart';
 import 'package:dashfix/components/post.dart';
 import 'package:dashfix/post_bank.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
 
 class SortFilterMenu extends StatelessWidget {
@@ -17,25 +16,9 @@ class SortFilterMenu extends StatelessWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final navigator = Navigator.of(context);
-          print(postBank.maxOffer);
-          print(postBank.minOffer);
-          print(postBank.maxDistance);
-          var newPosts = Set<Post>.from(
-            postBank.filterByOffer(postBank.minOffer, postBank.maxOffer),
-          );
-          final location = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.best,
-          );
+          var newPosts = Set<Post>.from(postBank.filterByOffer());
           postBank.posts = newPosts
-              .intersection(
-                Set.from(
-                  postBank.filterByDistance(
-                    postBank.maxDistance,
-                    location.latitude,
-                    location.longitude,
-                  ),
-                ),
-              )
+              .intersection(Set.from(postBank.filterByDistance()))
               .toList();
           navigator.pop();
         },
@@ -95,6 +78,7 @@ class SortFilterMenu extends StatelessWidget {
                           value: postBank.maxDistance,
                           onChanged: (value) {
                             postBank.maxDistance = value;
+                            print('max distance ${postBank.maxDistance}');
                           },
                         ),
                       ),
